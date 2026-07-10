@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="container">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-icon"><i class="fas fa-user-plus"></i></div>
+                <h2>Регистрация</h2>
+                <form method="post" action="{{ url_for('register') }}">
+                    <div class="auth-field">
+                        <label for="email">Email</label>
+                        <input type="email" name="email" id="email" placeholder="Введите email" required>
+                    </div>
+                    <div class="auth-field">
+                        <label for="username">Никнейм</label>
+                        <input type="text" name="username" id="username" placeholder="Придумайте никнейм" required minlength="3">
+                    </div>
+                    <div class="auth-field">
+                        <label for="password">Пароль</label>
+                        <input type="password" name="password" id="password" placeholder="Минимум 4 символа" required minlength="4">
+                    </div>
+                    <div class="auth-field">
+                        <label for="confirm_password">Подтверждение пароля</label>
+                        <input type="password" name="confirm_password" id="confirm_password" placeholder="Повторите пароль" required>
+                    </div>
+                    <button type="submit" class="auth-btn auth-btn-primary">Зарегистрироваться</button>
+                </form>
+                <p class="auth-link">
+                    Уже есть аккаунт? <a href="{{ url_for('login') }}">Войти</a>
+                </p>
+            </div>
+
+            <div class="auth-info">
+                <div class="auth-features">
+                    <h3>Что даёт регистрация</h3>
+                    <ul>
+                        <li><i class="fas fa-ticket-alt"></i> Покупка билетов на мероприятия</li>
+                        <li><i class="fas fa-exchange-alt"></i> Передача билетов друзьям</li>
+                        <li><i class="fas fa-palette"></i> Возможность стать мастером</li>
+                        <li><i class="fas fa-link"></i> Блокчейн-гарантия подлинности</li>
+                        <li><i class="fas fa-users"></i> Доступ к сообществу</li>
+                    </ul>
+                </div>
+                <div class="auth-rules">
+                    <p><i class="fas fa-info-circle"></i> Регистрируясь, вы соглашаетесь с <a href="{{ url_for('rules') }}">правилами сообщества</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const passwordInput = document.getElementById('password');
+    const confirmInput = document.getElementById('confirm_password');
+
+    function validatePasswords() {
+        if (confirmInput.value.length === 0) {
+            confirmInput.setCustomValidity('');
+            return;
+        }
+        if (passwordInput.value !== confirmInput.value) {
+            confirmInput.setCustomValidity('Пароли не совпадают');
+        } else {
+            confirmInput.setCustomValidity('');
+        }
+    }
+
+    passwordInput.addEventListener('input', validatePasswords);
+    confirmInput.addEventListener('input', validatePasswords);
+
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const email = document.getElementById('email').value.trim();
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!email) {
+            e.preventDefault();
+            alert('Введите email');
+            return false;
+        }
+
+        if (username.length < 3) {
+            e.preventDefault();
+            alert('Никнейм должен содержать не менее 3 символов');
+            return false;
+        }
+
+        if (password.length < 4) {
+            e.preventDefault();
+            alert('Пароль должен содержать не менее 4 символов');
+            return false;
+        }
+
+        if (password !== confirmInput.value) {
+            e.preventDefault();
+            alert('Пароли не совпадают');
+            return false;
+        }
+
+        return true;
+    });
+</script>
+
+<style>
+    .auth-rules {
+        text-align: center;
+        padding: 16px;
+        background: var(--bg-hover);
+        border-radius: 12px;
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+    .auth-rules a {
+        color: var(--color-primary);
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .auth-rules a:hover {
+        text-decoration: underline;
+    }
+    .auth-rules i {
+        color: var(--color-primary);
+        margin-right: 8px;
+    }
+
+    @media (max-width: 768px) {
+        .auth-container {
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+        .auth-card {
+            padding: 30px;
+        }
+        .auth-info {
+            order: -1;
+        }
+    }
+</style>
+{% endblock %}

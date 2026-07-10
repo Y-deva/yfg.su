@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="help-page">
+    <div class="container">
+        <div class="help-hero">
+            <h1><i class="fas fa-question-circle"></i> Помощь</h1>
+            <p class="help-subtitle">Ответы на часто задаваемые вопросы</p>
+        </div>
+
+        <div class="help-content">
+            <div class="help-section">
+                <h2>📋 Как создать мероприятие?</h2>
+                <ol>
+                    <li>Зарегистрируйтесь на платформе или войдите в существующий аккаунт</li>
+                    <li>Перейдите в раздел <strong>"Создать мероприятие"</strong> (доступно организаторам)</li>
+                    <li>Заполните информацию: название, описание, категория, дата и время, место проведения</li>
+                    <li>Укажите количество билетов и стоимость</li>
+                    <li>После сохранения мероприятие появится в списке и станет доступно для покупки билетов</li>
+                </ol>
+            </div>
+
+            <div class="help-section">
+                <h2>🎫 Как купить билет?</h2>
+                <ol>
+                    <li>Перейдите на страницу <a href="{{ url_for('events') }}">мероприятий</a></li>
+                    <li>Выберите интересующее вас событие</li>
+                    <li>Нажмите кнопку <strong>"Подробнее"</strong> для перехода на страницу мероприятия</li>
+                    <li>Выберите количество билетов и нажмите <strong>"Купить билеты"</strong></li>
+                    <li>После подтверждения билеты появятся в разделе <a href="{{ url_for('my_tickets') }}">"Мои билеты"</a></li>
+                </ol>
+            </div>
+
+            <div class="help-section">
+                <h2>🔄 Как передать билет другому участнику?</h2>
+                <ol>
+                    <li>Перейдите в раздел <a href="{{ url_for('my_tickets') }}">"Мои билеты"</a></li>
+                    <li>Найдите нужный билет и нажмите <strong>"Передать"</strong></li>
+                    <li>Введите email получателя (он должен быть зарегистрирован на платформе)</li>
+                    <li>Получатель получит запрос на передачу в свой профиль</li>
+                    <li>После подтверждения билет перейдёт к новому владельцу</li>
+                </ol>
+                <p class="help-note">
+                    <i class="fas fa-info-circle"></i> Передача билета возможна только до начала мероприятия
+                </p>
+            </div>
+
+            <div class="help-section">
+                <h2>🔗 Как работает блокчейн-гарантия?</h2>
+                <p>Блокчейн-гарантия обеспечивает неопровержимое подтверждение подлинности билетов и референсов:</p>
+                <ul>
+                    <li>Каждый билет получает уникальный криптографический хеш</li>
+                    <li>Хеш записывается в блокчейн-сеть с фиксацией времени</li>
+                    <li>Запись невозможно изменить или удалить постфактум</li>
+                    <li>Любой участник может проверить подлинность билета в любой момент</li>
+                    <li>Загрузка референсов персонажей также защищена блокчейном</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h2>🎨 Как стать мастером на платформе?</h2>
+                <ol>
+                    <li>Зарегистрируйтесь на платформе</li>
+                    <li>Перейдите в раздел <a href="{{ url_for('masters_list') }}">"Мастера"</a></li>
+                    <li>Нажмите кнопку <strong>"Стать мастером"</strong></li>
+                    <li>Заполните профиль: описание услуг, специализация, добавьте портфолио</li>
+                    <li>После модерации ваш профиль станет доступен для поиска</li>
+                </ol>
+            </div>
+
+            <div class="help-section">
+                <h2>📱 Как сканировать QR-код билета?</h2>
+                <p>Для организаторов доступна функция сканирования QR-кодов билетов:</p>
+                <ol>
+                    <li>Используйте встроенную камеру смартфона или любое приложение для сканирования QR</li>
+                    <li>Наведите камеру на QR-код билета участника</li>
+                    <li>Система автоматически проверит подлинность билета</li>
+                    <li>Билет будет отмечен как использованный</li>
+                </ol>
+                <p class="help-note">
+                    <i class="fas fa-info-circle"></i> Для сканирования не требуется специальное приложение — работает стандартная камера смартфона
+                </p>
+            </div>
+
+            <div class="help-section">
+                <h2>💰 Как формируется стоимость билетов?</h2>
+                <p>
+                    Стоимость билетов определяется организатором мероприятия.
+                    Цена указывается на странице мероприятия и не может быть изменена после начала продаж.
+                </p>
+                <p>
+                    Платформа не взимает комиссию с организаторов. Все средства за проданные билеты поступают организатору в полном объёме.
+                </p>
+            </div>
+
+            <div class="help-section">
+                <h2>❓ Что делать, если билет не отображается?</h2>
+                <p>Если вы приобрели билет, но он не отображается в разделе <a href="{{ url_for('my_tickets') }}">"Мои билеты"</a>:</p>
+                <ol>
+                    <li>Проверьте статус заказа в профиле пользователя</li>
+                    <li>Подождите несколько минут — система обрабатывает платежи с небольшой задержкой</li>
+                    <li>Проверьте, что вы вошли в тот же аккаунт, с которого совершали покупку</li>
+                    <li>Свяжитесь с организатором мероприятия через контакты на странице события</li>
+                    <li>Напишите в службу поддержки через <a href="{{ url_for('contacts') }}">форму обратной связи</a></li>
+                </ol>
+            </div>
+
+            <div class="help-section">
+                <h2>📞 Как связаться с организатором?</h2>
+                <p>
+                    На странице каждого мероприятия указана информация об организаторе.
+                    Вы можете связаться с ним через:
+                </p>
+                <ul>
+                    <li>Внутреннюю систему сообщений (в разработке)</li>
+                    <li>Указанные контакты на странице мероприятия</li>
+                    <li>Telegram-канал или группу, указанные организатором</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h2>🛡️ Как обеспечивается безопасность данных?</h2>
+                <ul>
+                    <li>Все пароли пользователей хранятся в зашифрованном виде</li>
+                    <li>Данные передаются по защищённому протоколу HTTPS</li>
+                    <li>Блокчейн-записи обеспечивают неизменность данных о билетах</li>
+                    <li>Платформа не передаёт личные данные третьим лицам</li>
+                </ul>
+            </div>
+
+            <div class="help-contact">
+                <h3>Не нашли ответ на свой вопрос?</h3>
+                <p>Свяжитесь с нами, и мы поможем вам в ближайшее время</p>
+                <a href="{{ url_for('contacts') }}" class="btn-primary">
+                    <i class="fas fa-envelope"></i> Написать в поддержку
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .help-page {
+        padding: 30px 0;
+    }
+    .help-hero {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    .help-hero h1 {
+        font-size: 36px;
+        color: var(--text-primary);
+    }
+    .help-hero h1 i {
+        color: var(--color-primary);
+        margin-right: 12px;
+    }
+    .help-subtitle {
+        font-size: 18px;
+        color: var(--text-secondary);
+    }
+    .help-content {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+    .help-section {
+        background: var(--bg-card);
+        padding: 24px 30px;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+    }
+    .help-section h2 {
+        font-size: 20px;
+        color: var(--text-primary);
+        margin-bottom: 14px;
+    }
+    .help-section p {
+        font-size: 15px;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 10px;
+    }
+    .help-section ol {
+        margin: 10px 0 10px 20px;
+        color: var(--text-secondary);
+        line-height: 1.8;
+    }
+    .help-section ul {
+        margin: 10px 0 10px 20px;
+        color: var(--text-secondary);
+        line-height: 1.8;
+        list-style: disc;
+    }
+    .help-section a {
+        color: var(--color-primary);
+        text-decoration: none;
+    }
+    .help-section a:hover {
+        text-decoration: underline;
+    }
+    .help-section strong {
+        color: var(--text-primary);
+    }
+    .help-note {
+        background: var(--bg-hover);
+        padding: 12px 16px;
+        border-radius: 12px;
+        margin-top: 12px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .help-note i {
+        color: var(--color-primary);
+        font-size: 18px;
+        margin-top: 2px;
+    }
+    .help-contact {
+        text-align: center;
+        padding: 30px;
+        background: var(--gradient-hero);
+        border-radius: 16px;
+        color: white;
+    }
+    .help-contact h3 {
+        font-size: 22px;
+        margin-bottom: 8px;
+    }
+    .help-contact p {
+        font-size: 16px;
+        opacity: 0.9;
+        margin-bottom: 16px;
+    }
+    .help-contact .btn-primary {
+        padding: 12px 30px;
+        border: none;
+        border-radius: 30px;
+        background: white;
+        color: var(--color-primary-dark);
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+    .help-contact .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    @media (max-width: 768px) {
+        .help-hero h1 {
+            font-size: 28px;
+        }
+        .help-section {
+            padding: 18px 16px;
+        }
+        .help-section h2 {
+            font-size: 18px;
+        }
+        .help-contact {
+            padding: 20px;
+        }
+        .help-contact .btn-primary {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}

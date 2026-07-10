@@ -1,0 +1,438 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="master-profile-page">
+    <div class="container">
+        <div class="master-profile-grid">
+            <div class="master-profile-left">
+                <div class="master-profile-card">
+                    <div class="master-profile-avatar">
+                        {% if master.user.avatar %}
+                            <img src="{{ url_for('static', filename='avatars/' + master.user.avatar) }}" alt="{{ master.user.username }}">
+                        {% else %}
+                            <div class="avatar-placeholder">{{ master.user.username[0]|upper }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="master-profile-info">
+                        <h1>{{ master.user.username }}</h1>
+                        <div class="master-rating">
+                            <span class="stars">
+                                {% for i in range((master.rating or 0)|round(0, 'floor')|int) %}⭐{% endfor %}
+                                {% if (master.rating or 0) % 1 >= 0.5 %}⭐{% endif %}
+                            </span>
+                            <span class="rating-value">{{ "%.1f"|format(master.rating or 0) }}</span>
+                            <span class="reviews-count">({{ master.review_count }} отзывов)</span>
+                        </div>
+                        <div class="master-description">
+                            <p>{{ master.description or 'Информация о мастере отсутствует' }}</p>
+                        </div>
+                        <div class="master-contact">
+                            <a href="mailto:{{ master.user.email }}" class="btn-contact">
+                                <i class="fas fa-envelope"></i> Написать
+                            </a>
+                            <a href="https://t.me/yfg_ing" target="_blank" class="btn-contact-telegram">
+                                <i class="fab fa-telegram"></i> Telegram
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                {% if master.portfolio %}
+                    <div class="master-portfolio">
+                        <h2>Портфолио</h2>
+                        <div class="portfolio-grid">
+                            {% for image in master.portfolio %}
+                                <div class="portfolio-item">
+                                    <img src="{{ image }}" alt="Работа мастера">
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="master-profile-right">
+                <div class="reviews-section">
+                    <div class="reviews-header">
+                        <h2>Отзывы</h2>
+                        {% if can_review %}
+                            <button class="btn-review" onclick="toggleReviewForm()">
+                                <i class="fas fa-star"></i> Оставить отзыв
+                            </button>
+                        {% endif %}
+                    </div>
+
+                    {% if can_review %}
+                        <div class="review-form-container" id="reviewForm" style="display: none;">
+                            <form method="post" action="{{ url_for('add_review', master_id=master.id) }}">
+                                <div class="form-group">
+                                    <label>Оценка</label>
+                                    <div class="rating-selector">
+                                        {% for i in range(5, 0, -1) %}
+                                            <input type="radio" name="rating" id="star{{ i }}" value="{{ i }}" {% if loop.index == 1 %}checked{% endif %}>
+                                            <label for="star{{ i }}">⭐</label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="comment">Комментарий</label>
+                                    <textarea name="comment" id="comment" rows="4" required placeholder="Опишите ваш опыт работы с мастером"></textarea>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn-primary">Отправить</button>
+                                    <button type="button" class="btn-secondary" onclick="toggleReviewForm()">Отмена</button>
+                                </div>
+                            </form>
+                        </div>
+                    {% endif %}
+
+                    {% if reviews %}
+                        <div class="reviews-list">
+                            {% for review in reviews %}
+                                <div class="review-item">
+                                    <div class="review-header">
+                                        <div>
+                                            <span class="review-author">{{ review.reviewer.username }}</span>
+                                            <span class="review-date">{{ review.created_at.strftime('%d.%m.%Y') }}</span>
+                                        </div>
+                                        <span class="review-rating">
+                                            {% for i in range(review.rating) %}⭐{% endfor %}
+                                        </span>
+                                    </div>
+                                    <p class="review-comment">{{ review.comment }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-reviews">
+                            <p>Отзывы отсутствуют</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleReviewForm() {
+        const form = document.getElementById('reviewForm');
+        if (form.style.display === 'none') {
+            form.style.display = 'block';
+            form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            form.style.display = 'none';
+        }
+    }
+</script>
+
+<style>
+    .master-profile-page {
+        padding: 30px 0;
+    }
+    .master-profile-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+    .master-profile-card {
+        background: var(--bg-card);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: var(--shadow);
+        text-align: center;
+    }
+    .master-profile-avatar {
+        margin-bottom: 20px;
+    }
+    .master-profile-avatar img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid var(--color-secondary);
+    }
+    .avatar-placeholder {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: var(--avatar-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        color: white;
+        border: 4px solid var(--color-secondary);
+        margin: 0 auto;
+    }
+    .master-profile-info h1 {
+        font-size: 28px;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+    }
+    .master-description {
+        margin: 20px 0;
+        padding: 16px;
+        background: var(--bg-hover);
+        border-radius: 12px;
+        text-align: left;
+    }
+    .master-description p {
+        margin: 0;
+        color: var(--text-secondary);
+        line-height: 1.5;
+    }
+    .master-contact {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 15px;
+    }
+    .btn-contact, .btn-contact-telegram {
+        padding: 10px 24px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+    .btn-contact {
+        background: var(--gradient-main);
+        color: white;
+    }
+    .btn-contact:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+        color: white;
+    }
+    .btn-contact-telegram {
+        background: #0088cc;
+        color: white;
+    }
+    .btn-contact-telegram:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+        color: white;
+    }
+    .master-portfolio {
+        margin-top: 30px;
+    }
+    .master-portfolio h2 {
+        font-size: 22px;
+        color: var(--text-primary);
+        margin-bottom: 15px;
+    }
+    .portfolio-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+    }
+    .portfolio-item {
+        border-radius: 12px;
+        overflow: hidden;
+        aspect-ratio: 1;
+        background: var(--bg-hover);
+    }
+    .portfolio-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s;
+    }
+    .portfolio-item:hover img {
+        transform: scale(1.05);
+    }
+    .reviews-section {
+        background: var(--bg-card);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: var(--shadow);
+    }
+    .reviews-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .reviews-header h2 {
+        font-size: 22px;
+        color: var(--text-primary);
+        margin: 0;
+    }
+    .btn-review {
+        padding: 8px 20px;
+        border: none;
+        border-radius: 20px;
+        background: #f59e0b;
+        color: white;
+        font-weight: 500;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+    }
+    .btn-review:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+    }
+    .review-form-container {
+        background: var(--bg-hover);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+        animation: fadeIn 0.3s ease;
+    }
+    .rating-selector {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 4px;
+    }
+    .rating-selector input {
+        display: none;
+    }
+    .rating-selector label {
+        font-size: 28px;
+        cursor: pointer;
+        transition: transform 0.2s;
+        color: #d1d5db;
+    }
+    .rating-selector input:checked ~ label {
+        color: #f59e0b;
+    }
+    .rating-selector label:hover,
+    .rating-selector label:hover ~ label {
+        color: #f59e0b;
+        transform: scale(1.1);
+    }
+    .review-form-container textarea {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        font-size: 14px;
+        background: var(--bg-input);
+        color: var(--text-primary);
+        resize: vertical;
+        min-height: 80px;
+        font-family: inherit;
+    }
+    .review-form-container textarea:focus {
+        outline: none;
+        border-color: var(--color-secondary);
+        box-shadow: 0 0 0 3px rgba(168,85,247,0.15);
+    }
+    .review-form-container .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+    }
+    .review-form-container .btn-primary {
+        padding: 8px 24px;
+        border: none;
+        border-radius: 20px;
+        background: var(--gradient-main);
+        color: white;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .review-form-container .btn-primary:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+    }
+    .review-form-container .btn-secondary {
+        padding: 8px 24px;
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        background: var(--bg-hover);
+        color: var(--text-primary);
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .review-form-container .btn-secondary:hover {
+        background: var(--border-color);
+    }
+    .reviews-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .review-item {
+        padding: 16px;
+        background: var(--bg-hover);
+        border-radius: 12px;
+        border-left: 3px solid var(--color-secondary);
+    }
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .review-author {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    .review-date {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+    .review-rating {
+        color: #f59e0b;
+        font-size: 14px;
+    }
+    .review-comment {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    .empty-reviews {
+        text-align: center;
+        padding: 30px 0;
+        color: var(--text-muted);
+    }
+
+    @media (max-width: 768px) {
+        .master-profile-grid {
+            grid-template-columns: 1fr;
+        }
+        .master-profile-card {
+            padding: 20px;
+        }
+        .reviews-section {
+            padding: 20px;
+        }
+        .reviews-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .btn-review {
+            justify-content: center;
+        }
+        .portfolio-grid {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        }
+        .master-contact {
+            flex-direction: column;
+        }
+        .btn-contact, .btn-contact-telegram {
+            justify-content: center;
+        }
+        .rating-selector label {
+            font-size: 24px;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="transfer-page">
+    <div class="container">
+        <div class="transfer-container">
+            <div class="transfer-header">
+                <h1><i class="fas fa-exchange-alt"></i> Передача билета</h1>
+                <a href="{{ url_for('my_tickets') }}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </a>
+            </div>
+
+            <div class="transfer-card">
+                <div class="transfer-ticket-info">
+                    <h3>{{ ticket.event.title }}</h3>
+                    <p class="ticket-detail">
+                        <span><i class="far fa-calendar-alt"></i> {{ ticket.event.date.strftime('%d.%m.%Y %H:%M') }}</span>
+                        <span><i class="fas fa-map-marker-alt"></i> {{ ticket.event.location }}</span>
+                    </p>
+                    <p class="ticket-id-info">Билет #{{ ticket.id }} — <span class="status-active">Действителен</span></p>
+                </div>
+
+                <form method="post" class="transfer-form">
+                    <div class="form-group">
+                        <label for="email">Email получателя</label>
+                        <input type="email" name="email" id="email" placeholder="Введите email пользователя" required>
+                        <small>Получатель должен быть зарегистрирован на платформе</small>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-paper-plane"></i> Отправить запрос
+                        </button>
+                        <a href="{{ url_for('my_tickets') }}" class="btn-secondary">Отмена</a>
+                    </div>
+                </form>
+            </div>
+
+            <div class="transfer-info">
+                <div class="info-block">
+                    <i class="fas fa-info-circle"></i>
+                    <div>
+                        <strong>Как это работает</strong>
+                        <ol>
+                            <li>Введите email получателя билета</li>
+                            <li>Получатель получит уведомление</li>
+                            <li>Получатель должен принять запрос</li>
+                            <li>После подтверждения билет перейдёт к нему</li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="info-block warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <strong>Внимание</strong>
+                        <p>После передачи билет вернуть будет невозможно. Убедитесь, что передаёте билет нужному человеку.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .transfer-page {
+        padding: 30px 0;
+    }
+    .transfer-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    .transfer-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    .transfer-header h1 {
+        font-size: 28px;
+        color: var(--text-primary);
+    }
+    .transfer-header h1 i {
+        color: var(--color-primary);
+        margin-right: 12px;
+    }
+    .btn-back {
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: color 0.2s;
+    }
+    .btn-back:hover {
+        color: var(--color-primary);
+    }
+    .transfer-card {
+        background: var(--bg-card);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: var(--shadow-heavy);
+    }
+    .transfer-ticket-info {
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border-light);
+        margin-bottom: 25px;
+    }
+    .transfer-ticket-info h3 {
+        font-size: 20px;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+    }
+    .ticket-detail {
+        display: flex;
+        gap: 20px;
+        font-size: 14px;
+        color: var(--text-secondary);
+        flex-wrap: wrap;
+    }
+    .ticket-detail i {
+        margin-right: 4px;
+        color: var(--text-muted);
+    }
+    .ticket-id-info {
+        margin-top: 10px;
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+    .status-active {
+        color: var(--toast-success);
+        font-weight: 600;
+    }
+    .transfer-form .form-group {
+        margin-bottom: 20px;
+    }
+    .transfer-form label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--text-primary);
+    }
+    .transfer-form input[type="email"] {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        font-size: 16px;
+        background: var(--bg-input);
+        color: var(--text-primary);
+        transition: border-color 0.2s;
+    }
+    .transfer-form input[type="email"]:focus {
+        outline: none;
+        border-color: var(--color-secondary);
+        box-shadow: 0 0 0 3px rgba(168,85,247,0.15);
+    }
+    .transfer-form small {
+        display: block;
+        margin-top: 6px;
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 10px;
+    }
+    .form-actions .btn-primary, .form-actions .btn-secondary {
+        padding: 12px 30px;
+        border-radius: 30px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .form-actions .btn-primary {
+        background: var(--gradient-main);
+        color: white;
+    }
+    .form-actions .btn-primary:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(249,115,22,0.3);
+    }
+    .form-actions .btn-secondary {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+    .form-actions .btn-secondary:hover {
+        background: var(--border-color);
+        transform: translateY(-2px);
+    }
+    .transfer-info {
+        margin-top: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .info-block {
+        display: flex;
+        gap: 15px;
+        padding: 16px 20px;
+        background: var(--bg-hover);
+        border-radius: 12px;
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+    .info-block i {
+        color: var(--color-primary);
+        font-size: 20px;
+        margin-top: 2px;
+    }
+    .info-block strong {
+        color: var(--text-primary);
+        display: block;
+        margin-bottom: 4px;
+    }
+    .info-block ol {
+        margin: 8px 0 0 18px;
+        padding: 0;
+    }
+    .info-block ol li {
+        margin-bottom: 4px;
+    }
+    .info-block.warning i {
+        color: #f59e0b;
+    }
+    .info-block.warning p {
+        margin: 4px 0 0 0;
+    }
+
+    @media (max-width: 480px) {
+        .transfer-card {
+            padding: 20px;
+        }
+        .ticket-detail {
+            flex-direction: column;
+            gap: 6px;
+        }
+        .form-actions {
+            flex-direction: column;
+        }
+        .form-actions .btn-primary, .form-actions .btn-secondary {
+            justify-content: center;
+        }
+        .info-block {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}

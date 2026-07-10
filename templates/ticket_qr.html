@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="qr-page">
+    <div class="container">
+        <div class="qr-container">
+            <div class="qr-header">
+                <h1>QR-код билета</h1>
+                <a href="{{ url_for('my_tickets') }}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </a>
+            </div>
+            <div class="qr-card">
+                <div class="qr-event-info">
+                    <h2>{{ ticket.event.title }}</h2>
+                    <div class="qr-meta">
+                        <span><i class="far fa-calendar-alt"></i> {{ ticket.event.date.strftime('%d.%m.%Y %H:%M') }}</span>
+                        <span><i class="fas fa-map-marker-alt"></i> {{ ticket.event.location }}</span>
+                    </div>
+                    <div class="qr-ticket-id">
+                        <span class="label">Номер билета</span>
+                        <span class="value">#{{ ticket.id }}</span>
+                    </div>
+                    <div class="qr-owner">
+                        <span class="label">Владелец</span>
+                        <span class="value">{{ ticket.owner.username }}</span>
+                    </div>
+                </div>
+                <div class="qr-image-container">
+                    <img src="data:image/png;base64,{{ qr_base64 }}" alt="QR Code" class="qr-image">
+                    <p class="qr-hint">Предъявите QR-код на входе для проверки билета</p>
+                </div>
+                <div class="qr-actions">
+                    <button onclick="window.print()" class="btn-primary">
+                        <i class="fas fa-print"></i> Печать
+                    </button>
+                    <button onclick="downloadQR()" class="btn-secondary">
+                        <i class="fas fa-download"></i> Скачать
+                    </button>
+                </div>
+            </div>
+            <div class="qr-info">
+                <div class="info-block">
+                    <i class="fas fa-info-circle"></i>
+                    <p>QR-код содержит уникальную информацию о билете. Не передавайте его третьим лицам.</p>
+                </div>
+                <div class="info-block blockchain">
+                    <i class="fas fa-link"></i>
+                    <p>Билет защищён блокчейн-гарантией. Хеш: <code>{{ ticket.qr_hash[:16] }}...</code></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function downloadQR() {
+        const img = document.querySelector('.qr-image');
+        const link = document.createElement('a');
+        link.download = 'ticket_{{ ticket.id }}_qr.png';
+        link.href = img.src;
+        link.click();
+    }
+</script>
+
+<style>
+    .qr-page {
+        padding: 30px 0;
+    }
+    .qr-container {
+        max-width: 560px;
+        margin: 0 auto;
+    }
+    .qr-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    .qr-header h1 {
+        font-size: 28px;
+        color: var(--text-primary);
+    }
+    .btn-back {
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: color 0.2s;
+    }
+    .btn-back:hover {
+        color: var(--color-primary);
+    }
+    .qr-card {
+        background: var(--bg-card);
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: var(--shadow-heavy);
+        text-align: center;
+    }
+    .qr-event-info {
+        margin-bottom: 30px;
+    }
+    .qr-event-info h2 {
+        font-size: 22px;
+        color: var(--text-primary);
+        margin-bottom: 10px;
+    }
+    .qr-meta {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        font-size: 14px;
+        color: var(--text-secondary);
+        flex-wrap: wrap;
+    }
+    .qr-meta i {
+        margin-right: 6px;
+        color: var(--text-muted);
+    }
+    .qr-ticket-id, .qr-owner {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 8px;
+        font-size: 14px;
+    }
+    .qr-ticket-id .label, .qr-owner .label {
+        color: var(--text-muted);
+    }
+    .qr-ticket-id .value, .qr-owner .value {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+    .qr-image-container {
+        margin: 20px 0;
+    }
+    .qr-image {
+        width: 220px;
+        height: 220px;
+        border: 2px solid var(--border-light);
+        border-radius: 12px;
+        padding: 10px;
+        background: white;
+    }
+    .qr-hint {
+        margin-top: 12px;
+        font-size: 14px;
+        color: var(--text-muted);
+    }
+    .qr-actions {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+    .qr-actions .btn-primary, .qr-actions .btn-secondary {
+        padding: 10px 24px;
+        border-radius: 30px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .qr-actions .btn-primary {
+        background: var(--gradient-main);
+        color: white;
+    }
+    .qr-actions .btn-primary:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+    }
+    .qr-actions .btn-secondary {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+    .qr-actions .btn-secondary:hover {
+        background: var(--border-color);
+        transform: translateY(-2px);
+    }
+    .qr-info {
+        margin-top: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .info-block {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 16px;
+        background: var(--bg-hover);
+        border-radius: 12px;
+        font-size: 14px;
+        color: var(--text-secondary);
+        text-align: left;
+    }
+    .info-block i {
+        color: var(--color-primary);
+        font-size: 18px;
+        margin-top: 2px;
+    }
+    .info-block.blockchain i {
+        color: var(--color-secondary);
+    }
+    .info-block code {
+        background: var(--code-bg);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 13px;
+        color: var(--text-primary);
+    }
+
+    @media (max-width: 480px) {
+        .qr-card {
+            padding: 20px;
+        }
+        .qr-image {
+            width: 180px;
+            height: 180px;
+        }
+        .qr-meta {
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+        }
+        .qr-actions {
+            flex-direction: column;
+        }
+        .qr-actions .btn-primary, .qr-actions .btn-secondary {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}

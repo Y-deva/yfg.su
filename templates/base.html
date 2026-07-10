@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}YFG — Your Furry Group{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/logo.svg') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="page-container">
+        <header class="header sticky-header">
+            <div class="header-inner">
+                <div class="header-left">
+                    <div class="burger-menu" id="burgerBtn">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <div class="logo">
+                        <a href="{{ url_for('index') }}">
+                            <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="YFG" height="36">
+                        </a>
+                    </div>
+                </div>
+                <div class="header-search">
+                    <form action="{{ url_for('events') }}" method="get">
+                        <input type="text" name="q" placeholder="Поиск мероприятий..." autocomplete="off">
+                        <button type="submit"><i class="fas fa-search"></i></button>
+                    </form>
+                </div>
+                <div class="header-right">
+                    {% if user_id %}
+                        <a href="{{ url_for('my_tickets') }}" class="header-link" title="Мои билеты">
+                            <i class="fas fa-ticket-alt"></i>
+                        </a>
+                        <a href="{{ url_for('profile') }}" class="user-avatar-link">
+                            {% if user_avatar %}
+                                <img src="{{ url_for('static', filename='avatars/' + user_avatar) }}" class="user-avatar-img" alt="avatar">
+                            {% else %}
+                                <div class="user-avatar">{{ user_username[0]|upper if user_username else '?' }}</div>
+                            {% endif %}
+                        </a>
+                        <span class="user-name">{{ user_username }}</span>
+                        <a href="{{ url_for('logout') }}" class="logout-btn">Выйти</a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="btn-login-header">Войти</a>
+                        <a href="{{ url_for('register') }}" class="btn-register-header">Регистрация</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="burger-menu-dropdown" id="burgerDropdown">
+                <div class="burger-menu-content">
+                    <div class="burger-menu-section">
+                        <h4>Навигация</h4>
+                        <a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Главная</a>
+                        <a href="{{ url_for('events') }}"><i class="fas fa-calendar-alt"></i> Мероприятия</a>
+                        <a href="{{ url_for('masters_list') }}"><i class="fas fa-palette"></i> Мастера</a>
+                        <a href="{{ url_for('blockchain') }}"><i class="fas fa-link"></i> Блокчейн</a>
+                    </div>
+                    <div class="burger-menu-section">
+                        <h4>Для организаторов</h4>
+                        <a href="#"><i class="fas fa-plus-circle"></i> Создать мероприятие</a>
+                        <a href="#"><i class="fas fa-list"></i> Мои мероприятия</a>
+                    </div>
+                    {% if user_id %}
+                        <div class="burger-menu-section">
+                            <h4>Личное</h4>
+                            <a href="{{ url_for('my_tickets') }}"><i class="fas fa-ticket-alt"></i> Мои билеты</a>
+                            <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Профиль</a>
+                            <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+                        </div>
+                    {% endif %}
+                    <div class="burger-menu-section">
+                        <h4>Информация</h4>
+                        <a href="{{ url_for('about') }}"><i class="fas fa-info-circle"></i> О проекте</a>
+                        <a href="{{ url_for('help_page') }}"><i class="fas fa-question-circle"></i> Помощь</a>
+                        <a href="{{ url_for('rules') }}"><i class="fas fa-gavel"></i> Правила</a>
+                        <a href="{{ url_for('contacts') }}"><i class="fas fa-envelope"></i> Контакты</a>
+                    </div>
+                    <div class="burger-menu-footer">
+                        <div class="theme-toggle-wrapper">
+                            <button id="themeToggleBtn" class="theme-toggle-btn" title="Переключить тему">
+                                <span class="icon-sun">☀️</span>
+                                <span class="icon-moon">🌙</span>
+                            </button>
+                        </div>
+                        <div class="socials-mini">
+                            <a href="https://t.me/yfg_ing" target="_blank" class="social-link" aria-label="Telegram">
+                                <i class="fab fa-telegram"></i>
+                            </a>
+                            <a href="https://discord.gg/TcwgMBKQFw" target="_blank" class="social-link" aria-label="Discord">
+                                <i class="fab fa-discord"></i>
+                            </a>
+                            <a href="https://www.youtube.com/@yfg_ing" target="_blank" class="social-link" aria-label="YouTube">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                            <a href="https://github.com/YFG-CodeBase" target="_blank" class="social-link" aria-label="GitHub">
+                                <i class="fab fa-github"></i>
+                            </a>
+                        </div>
+                        <div class="burger-close" id="burgerClose">
+                            <i class="fas fa-times"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div id="toast-container">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% for category, message in messages %}
+                        <div class="toast toast-{{ category }} show">{{ message }}</div>
+                    {% endfor %}
+                {% endwith %}
+            </div>
+
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="footer">
+            <div class="footer-inner">
+                <div class="footer-col">
+                    <h4>YFG</h4>
+                    <a href="{{ url_for('about') }}">О нас</a>
+                    <a href="#">Команда</a>
+                    <a href="#">Блог</a>
+                    <a href="{{ url_for('contacts') }}">Контакты</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Участникам</h4>
+                    <a href="{{ url_for('events') }}">Мероприятия</a>
+                    <a href="{{ url_for('masters_list') }}">Мастера</a>
+                    <a href="{{ url_for('blockchain') }}">Блокчейн-гарантия</a>
+                    <a href="#">Стать организатором</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Помощь</h4>
+                    <a href="{{ url_for('help_page') }}">FAQ</a>
+                    <a href="{{ url_for('rules') }}">Правила</a>
+                    <a href="#">Политика конфиденциальности</a>
+                    <a href="#">Условия использования</a>
+                </div>
+                <div class="footer-col footer-socials">
+                    <h4>Мы в соцсетях</h4>
+                    <div class="socials">
+                        <a href="https://t.me/yfg_ing" target="_blank" class="social-link" aria-label="Telegram">
+                            <i class="fab fa-telegram"></i>
+                        </a>
+                        <a href="https://discord.gg/TcwgMBKQFw" target="_blank" class="social-link" aria-label="Discord">
+                            <i class="fab fa-discord"></i>
+                        </a>
+                        <a href="https://www.youtube.com/@yfg_ing" target="_blank" class="social-link" aria-label="YouTube">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                        <a href="https://github.com/YFG-CodeBase" target="_blank" class="social-link" aria-label="GitHub">
+                            <i class="fab fa-github"></i>
+                        </a>
+                    </div>
+                    <div class="footer-copyright">
+                        <p>&copy; 2026 YFG — Your Furry Group</p>
+                        <p class="footer-tagline">Сделано с ❤️ для фурри-сообщества</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Бургер-меню
+        document.addEventListener('DOMContentLoaded', function() {
+            const burgerBtn = document.getElementById('burgerBtn');
+            const burgerDropdown = document.getElementById('burgerDropdown');
+            const overlay = document.createElement('div');
+            overlay.className = 'burger-overlay';
+            document.body.appendChild(overlay);
+
+            function toggleMenu() {
+                burgerDropdown.classList.toggle('open');
+                overlay.classList.toggle('show');
+                burgerBtn.classList.toggle('open');
+                document.body.style.overflow = burgerDropdown.classList.contains('open') ? 'hidden' : '';
+            }
+
+            burgerBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleMenu();
+            });
+
+            overlay.addEventListener('click', toggleMenu);
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && burgerDropdown.classList.contains('open')) {
+                    toggleMenu();
+                }
+            });
+
+            document.querySelectorAll('.burger-menu-section a').forEach(link => {
+                link.addEventListener('click', function() {
+                    if (burgerDropdown.classList.contains('open')) toggleMenu();
+                });
+            });
+
+            // Автоскрытие тостов
+            document.querySelectorAll('.toast').forEach(toast => {
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+                }, 5000);
+            });
+
+            // Переключение темы
+            const themeBtn = document.getElementById('themeToggleBtn');
+
+            function setTheme(theme) {
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark-theme');
+                    document.body.classList.add('dark-theme');
+                    localStorage.setItem('careervibe-theme', 'dark');
+                } else {
+                    document.documentElement.classList.remove('dark-theme');
+                    document.body.classList.remove('dark-theme');
+                    localStorage.setItem('careervibe-theme', 'light');
+                }
+            }
+
+            const savedTheme = localStorage.getItem('careervibe-theme');
+            if (savedTheme === 'dark') {
+                setTheme('dark');
+            }
+
+            themeBtn.addEventListener('click', function() {
+                const isDark = document.body.classList.contains('dark-theme');
+                setTheme(isDark ? 'light' : 'dark');
+            });
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

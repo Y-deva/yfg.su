@@ -1,0 +1,725 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="game-container">
+    <canvas id="snakeCanvas"></canvas>
+
+    <div class="content">
+        <div class="error-code">404</div>
+        <div class="error-subtitle">Страница не найдена</div>
+        <div class="stats">
+            <div class="score-display">
+                <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="YFG" class="score-icon">
+                <span id="scoreDisplay">0</span>
+            </div>
+            <div class="timer-display">⏱ <span id="timerDisplay">60</span>с</div>
+        </div>
+        <div class="actions">
+            <a href="{{ url_for('index') }}" class="btn-primary">На главную</a>
+            <button class="btn-secondary" id="resetBtn">↻</button>
+        </div>
+        <div class="hint" id="hintText">Кликните на змейку, чтобы начать игру</div>
+    </div>
+
+    <div class="game-over-overlay" id="gameOverOverlay" style="display: none;">
+        <div class="game-over-modal">
+            <h2>Игра окончена!</h2>
+            <p>Вы съели <span id="finalScore">0</span></p>
+            <div class="game-over-actions">
+                <button class="btn-primary" id="restartFromOverBtn">Играть снова</button>
+                <a href="{{ url_for('index') }}" class="btn-secondary">На главную</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .game-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: radial-gradient(circle at center, #1a1a3e 0%, #0d0b1a 100%);
+        overflow: hidden;
+        z-index: 10;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        user-select: none;
+        pointer-events: none;
+    }
+    #snakeCanvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        cursor: pointer;
+        pointer-events: auto;
+    }
+    .content {
+        position: relative;
+        z-index: 2;
+        pointer-events: none;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 20px;
+        text-align: center;
+        color: white;
+    }
+    .content * { pointer-events: auto; }
+    .error-code {
+        font-size: 120px;
+        font-weight: 900;
+        background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        opacity: 0.85;
+        line-height: 1;
+        text-shadow: 0 0 60px rgba(168,85,247,0.2);
+    }
+    .error-subtitle {
+        font-size: 22px;
+        opacity: 0.6;
+        font-weight: 300;
+        letter-spacing: 2px;
+    }
+    .stats {
+        display: flex;
+        gap: 24px;
+        margin-top: 8px;
+        align-items: center;
+    }
+    .score-display {
+        font-size: 22px;
+        font-weight: 600;
+        background: rgba(255,255,255,0.08);
+        backdrop-filter: blur(8px);
+        padding: 6px 20px;
+        border-radius: 40px;
+        border: 1px solid rgba(255,255,255,0.06);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .score-display .score-icon {
+        width: 24px;
+        height: 24px;
+        display: block;
+    }
+    .score-display span {
+        color: var(--color-primary-light);
+        min-width: 20px;
+    }
+    .timer-display {
+        font-size: 22px;
+        font-weight: 600;
+        background: rgba(255,255,255,0.08);
+        backdrop-filter: blur(8px);
+        padding: 6px 20px;
+        border-radius: 40px;
+        border: 1px solid rgba(255,255,255,0.06);
+    }
+    .timer-display span { color: #ffd966; }
+    .timer-display.warning span {
+        color: #ef4444;
+        animation: blink 0.8s ease-in-out infinite;
+    }
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+    }
+    .actions {
+        display: flex;
+        gap: 16px;
+        margin-top: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .btn-primary {
+        background: var(--gradient-main);
+        color: white;
+        padding: 12px 30px;
+        border-radius: 40px;
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        pointer-events: auto;
+        font-size: 16px;
+    }
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 30px rgba(249,115,22,0.3);
+    }
+    .btn-secondary {
+        background: rgba(255,255,255,0.1);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.15);
+        padding: 12px 20px;
+        border-radius: 40px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+        pointer-events: auto;
+        font-size: 20px;
+        line-height: 1;
+        backdrop-filter: blur(4px);
+    }
+    .btn-secondary:hover {
+        background: rgba(255,255,255,0.2);
+    }
+    .hint {
+        font-size: 14px;
+        opacity: 0.5;
+        margin-top: 12px;
+        letter-spacing: 0.5px;
+        font-weight: 300;
+        transition: opacity 0.5s;
+    }
+    .hint.hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
+    .game-over-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        animation: fade-in 0.3s ease;
+        pointer-events: auto;
+    }
+    .game-over-modal {
+        background: var(--bg-card);
+        padding: 40px 50px;
+        border-radius: 30px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        border: 1px solid var(--border-light);
+        max-width: 400px;
+        width: 90%;
+    }
+    .game-over-modal h2 {
+        font-size: 32px;
+        margin-bottom: 10px;
+        color: var(--text-primary);
+    }
+    .game-over-modal p {
+        font-size: 20px;
+        color: var(--text-secondary);
+        margin-bottom: 24px;
+    }
+    .game-over-modal p span {
+        font-weight: 700;
+        color: var(--color-primary);
+    }
+    .game-over-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .game-over-actions .btn-primary {
+        background: var(--gradient-main);
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 40px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .game-over-actions .btn-primary:hover {
+        transform: translateY(-2px);
+    }
+    .game-over-actions .btn-secondary {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        padding: 10px 24px;
+        border-radius: 40px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.2s;
+    }
+    .game-over-actions .btn-secondary:hover {
+        background: var(--border-color);
+    }
+    @keyframes fade-in {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+    @media (max-width: 600px) {
+        .error-code { font-size: 80px; }
+        .error-subtitle { font-size: 18px; }
+        .stats { flex-direction: column; gap: 8px; }
+        .score-display, .timer-display {
+            font-size: 18px;
+            padding: 4px 16px;
+        }
+        .score-display .score-icon {
+            width: 20px;
+            height: 20px;
+        }
+        .btn-primary { padding: 10px 24px; font-size: 14px; }
+        .btn-secondary { padding: 10px 16px; font-size: 18px; }
+        .hint { font-size: 12px; }
+        .game-over-modal { padding: 30px 20px; }
+    }
+</style>
+
+<script>
+    (function() {
+        // ========== НАСТРОЙКИ ==========
+        const canvas = document.getElementById('snakeCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreSpan = document.getElementById('scoreDisplay');
+        const timerSpan = document.getElementById('timerDisplay');
+        const hintText = document.getElementById('hintText');
+        const finalScoreSpan = document.getElementById('finalScore');
+        const gameOverOverlay = document.getElementById('gameOverOverlay');
+
+        let W, H;
+        let mouseX = 0, mouseY = 0;
+        let score = 0;
+        let timer = 60;
+        let gameActive = false;
+        let isSleeping = true;
+        let timerInterval = null;
+        let animationId = null;
+
+        let invincible = true;
+        let invincibleTimer = null;
+        const INVINCIBLE_DURATION = 3000;
+
+        // === Параметры змейки (Verlet) ===
+        const SNAKE_RADIUS = 9;
+        const SEGMENT_DIST = 3.5;
+        const MAX_HEAD_SPEED = 5;
+        const MAX_TURN_ANGLE = 0.12;
+        const STOP_DIST = 25;
+        const SLOW_DOWN_DIST = 80;
+        const INITIAL_SEGMENTS = 250;
+        const COLLISION_SKIP = 30;
+        const COLLISION_RADIUS_MULT = 1.4;
+
+        let snake = [];
+        let targetSegments = INITIAL_SEGMENTS;
+        let dir = { x: 1, y: 0 };
+        let currentSpeed = 0;
+        let head = { x: 0, y: 0 };
+
+        let food = null;
+        const FOOD_RADIUS = 20;
+
+        const logo = new Image();
+        logo.src = "{{ url_for('static', filename='images/logo.svg') }}";
+
+        // ========== ФУНКЦИИ ==========
+        function resize() {
+            W = window.innerWidth;
+            H = window.innerHeight;
+            canvas.width = W;
+            canvas.height = H;
+            canvas.style.width = W + 'px';
+            canvas.style.height = H + 'px';
+            if (!gameActive) {
+                const margin = 150;
+                const cx = margin + Math.random() * (W - 2 * margin);
+                const cy = margin + Math.random() * (H - 2 * margin);
+                buildSleepingSnake(cx, cy);
+                draw();
+            }
+        }
+
+        function buildSleepingSnake(cx, cy) {
+            snake = [];
+            const count = targetSegments;
+            const turns = 2.5;
+            for (let i = 0; i < count; i++) {
+                const t = i / count;
+                const angle = t * turns * 2 * Math.PI;
+                const radius = t * 80 + 10;
+                const x = cx + radius * Math.cos(angle);
+                const y = cy + radius * Math.sin(angle);
+                snake.push({ x, y });
+            }
+            head = { x: snake[0].x, y: snake[0].y };
+            dir = { x: 1, y: 0 };
+            currentSpeed = 0;
+        }
+
+        function spawnFood() {
+            const margin = 80;
+            let attempts = 0;
+            let pos;
+            do {
+                pos = {
+                    x: margin + Math.random() * (W - 2 * margin),
+                    y: margin + Math.random() * (H - 2 * margin)
+                };
+                attempts++;
+            } while (attempts < 50 && snake.some(s => dist(s, pos) < 80));
+            food = pos;
+        }
+
+        function dist(a, b) {
+            return Math.hypot(a.x - b.x, a.y - b.y);
+        }
+
+        function checkSelfCollision() {
+            if (invincible) return false;
+            const headPos = snake[0];
+            for (let i = COLLISION_SKIP; i < snake.length; i++) {
+                if (dist(headPos, snake[i]) < SNAKE_RADIUS * COLLISION_RADIUS_MULT) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function updateSnake() {
+            if (!gameActive) return;
+            if (isSleeping) isSleeping = false;
+
+            const dx = mouseX - head.x;
+            const dy = mouseY - head.y;
+            const distToMouse = Math.hypot(dx, dy);
+            if (distToMouse > 1) {
+                const desired = { x: dx / distToMouse, y: dy / distToMouse };
+                const dot = dir.x * desired.x + dir.y * desired.y;
+                const cross = dir.x * desired.y - dir.y * desired.x;
+                let angle = Math.atan2(cross, dot);
+                if (Math.abs(angle) > MAX_TURN_ANGLE) {
+                    angle = Math.sign(angle) * MAX_TURN_ANGLE;
+                }
+                const cos = Math.cos(angle);
+                const sin = Math.sin(angle);
+                const newDir = {
+                    x: dir.x * cos - dir.y * sin,
+                    y: dir.x * sin + dir.y * cos
+                };
+                const l = Math.hypot(newDir.x, newDir.y);
+                if (l > 0) {
+                    dir.x = newDir.x / l;
+                    dir.y = newDir.y / l;
+                }
+            }
+
+            let targetSpeed = 0;
+            if (distToMouse > STOP_DIST) {
+                const t = (distToMouse - STOP_DIST) / (SLOW_DOWN_DIST - STOP_DIST);
+                targetSpeed = Math.min(MAX_HEAD_SPEED, t * MAX_HEAD_SPEED);
+            }
+            const speedSmooth = 0.12;
+            currentSpeed += (targetSpeed - currentSpeed) * speedSmooth;
+
+            head.x += dir.x * currentSpeed;
+            head.y += dir.y * currentSpeed;
+            snake[0] = { x: head.x, y: head.y };
+
+            for (let i = 1; i < snake.length; i++) {
+                const prev = snake[i - 1];
+                const curr = snake[i];
+                const dx = curr.x - prev.x;
+                const dy = curr.y - prev.y;
+                const d = Math.hypot(dx, dy);
+                if (d > SEGMENT_DIST) {
+                    const ratio = SEGMENT_DIST / d;
+                    snake[i].x = prev.x + dx * ratio;
+                    snake[i].y = prev.y + dy * ratio;
+                }
+            }
+
+            while (snake.length > targetSegments) {
+                snake.pop();
+            }
+
+            if (checkSelfCollision()) {
+                gameOver('Вы врезались в себя!');
+                return;
+            }
+
+            if (food) {
+                if (dist(head, food) < SNAKE_RADIUS + FOOD_RADIUS) {
+                    score++;
+                    scoreSpan.textContent = score;
+                    targetSegments += 5;
+                    const last = snake[snake.length - 1];
+                    for (let i = 0; i < 5; i++) {
+                        snake.push({ x: last.x, y: last.y });
+                    }
+                    spawnFood();
+                }
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, W, H);
+
+            if (food && gameActive) {
+                const f = food;
+                const r = FOOD_RADIUS;
+                ctx.shadowColor = 'rgba(249,115,22,0.4)';
+                ctx.shadowBlur = 25;
+                if (logo.complete && logo.naturalWidth > 0) {
+                    ctx.drawImage(logo, f.x - r, f.y - r, r * 2, r * 2);
+                } else {
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#f97316';
+                    ctx.beginPath();
+                    ctx.arc(f.x, f.y, r, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+                ctx.shadowBlur = 0;
+            }
+
+            if (snake.length < 2) return;
+
+            const grad = ctx.createLinearGradient(
+                snake[0].x, snake[0].y,
+                snake[snake.length-1].x, snake[snake.length-1].y
+            );
+            grad.addColorStop(0, '#f97316');
+            grad.addColorStop(0.5, '#a855f7');
+            grad.addColorStop(1, '#f97316');
+
+            ctx.lineWidth = SNAKE_RADIUS * 2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            if (invincible) {
+                ctx.shadowColor = 'rgba(255,255,255,0.4)';
+                ctx.shadowBlur = 30;
+                ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                ctx.beginPath();
+                ctx.moveTo(snake[0].x, snake[0].y);
+                for (let i = 1; i < snake.length; i++) {
+                    ctx.lineTo(snake[i].x, snake[i].y);
+                }
+                ctx.stroke();
+            }
+
+            ctx.shadowColor = 'rgba(168,85,247,0.15)';
+            ctx.shadowBlur = 15;
+            ctx.strokeStyle = grad;
+            ctx.beginPath();
+            ctx.moveTo(snake[0].x, snake[0].y);
+            for (let i = 1; i < snake.length - 1; i++) {
+                const xc = (snake[i].x + snake[i+1].x) / 2;
+                const yc = (snake[i].y + snake[i+1].y) / 2;
+                ctx.quadraticCurveTo(snake[i].x, snake[i].y, xc, yc);
+            }
+            const last = snake[snake.length - 1];
+            ctx.lineTo(last.x, last.y);
+            ctx.stroke();
+
+            const h = snake[0];
+            ctx.shadowBlur = 0;
+            if (isSleeping) {
+                ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(h.x - 8, h.y - 4);
+                ctx.lineTo(h.x - 2, h.y - 4);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(h.x + 2, h.y - 4);
+                ctx.lineTo(h.x + 8, h.y - 4);
+                ctx.stroke();
+            } else {
+                ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                ctx.beginPath();
+                ctx.arc(h.x - 6, h.y - 6, 3, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(h.x + 6, h.y - 6, 3, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.fillStyle = '#0d0b1a';
+                ctx.beginPath();
+                ctx.arc(h.x - 7, h.y - 7, 1.5, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(h.x + 5, h.y - 7, 1.5, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+        }
+
+        function startTimer() {
+            timer = 60;
+            timerSpan.textContent = timer;
+            timerSpan.parentElement.classList.remove('warning');
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timer--;
+                timerSpan.textContent = timer;
+                if (timer <= 10) {
+                    timerSpan.parentElement.classList.add('warning');
+                }
+                if (timer <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    gameOver('Время вышло!');
+                }
+            }, 1000);
+        }
+
+        function gameOver(reason) {
+            gameActive = false;
+            finalScoreSpan.textContent = score;
+            const modalTitle = document.querySelector('.game-over-modal h2');
+            if (modalTitle) modalTitle.textContent = reason || 'Игра окончена!';
+            gameOverOverlay.style.display = 'flex';
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+        }
+
+        // === НОВАЯ ЛОГИКА СБРОСА: разделяем сброс состояния и позиции ===
+        function resetState() {
+            // Сбрасываем всё, кроме snake и head
+            clearInterval(timerInterval);
+            timerInterval = null;
+            gameActive = false;
+            isSleeping = true;
+            gameOverOverlay.style.display = 'none';
+            invincible = false;
+            if (invincibleTimer) {
+                clearTimeout(invincibleTimer);
+                invincibleTimer = null;
+            }
+            score = 0;
+            scoreSpan.textContent = '0';
+            timer = 60;
+            timerSpan.textContent = '60';
+            timerSpan.parentElement.classList.remove('warning');
+            targetSegments = INITIAL_SEGMENTS;
+            currentSpeed = 0;
+            dir = { x: 1, y: 0 };
+            food = null;
+            hintText.classList.remove('hidden');
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+        }
+
+        function resetPosition() {
+            // Перестраиваем змейку в случайном месте
+            const margin = 150;
+            const cx = margin + Math.random() * (W - 2 * margin);
+            const cy = margin + Math.random() * (H - 2 * margin);
+            buildSleepingSnake(cx, cy);
+        }
+
+        function resetGame() {
+            resetState();
+            resetPosition();
+            draw();
+        }
+
+        function wakeUp() {
+            if (gameActive) return;
+            // Сбрасываем состояние, но НЕ меняем позицию змейки
+            resetState();
+            // Активируем игру
+            gameActive = true;
+            isSleeping = false;
+            invincible = true;
+            hintText.classList.add('hidden');
+            score = 0;
+            scoreSpan.textContent = '0';
+            targetSegments = INITIAL_SEGMENTS;
+            spawnFood();
+            startTimer();
+
+            if (invincibleTimer) clearTimeout(invincibleTimer);
+            invincibleTimer = setTimeout(() => {
+                invincible = false;
+                invincibleTimer = null;
+            }, INVINCIBLE_DURATION);
+
+            if (!animationId) loop();
+        }
+
+        function loop() {
+            if (gameActive) updateSnake();
+            draw();
+            animationId = requestAnimationFrame(loop);
+        }
+
+        // ========== ОБРАБОТЧИКИ ==========
+        function onMouseMove(e) {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        }
+        function onTouchMove(e) {
+            const touch = e.touches[0];
+            if (touch) {
+                mouseX = touch.clientX;
+                mouseY = touch.clientY;
+                e.preventDefault();
+            }
+        }
+        function onTouchStart(e) {
+            const touch = e.touches[0];
+            if (touch) {
+                mouseX = touch.clientX;
+                mouseY = touch.clientY;
+                if (!gameActive) wakeUp();
+            }
+        }
+
+        canvas.addEventListener('click', function(e) {
+            if (!gameActive) wakeUp();
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', resetGame);
+        document.getElementById('restartFromOverBtn').addEventListener('click', function() {
+            resetGame();
+            // Не пробуждаем – змейка остаётся спящей
+        });
+
+        // ========== ЗАПУСК ==========
+        function init() {
+            resize();
+            mouseX = W / 2;
+            mouseY = H / 2;
+            if (!animationId) loop();
+
+            window.addEventListener('resize', resize);
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('touchmove', onTouchMove, { passive: false });
+            window.addEventListener('touchstart', onTouchStart, { passive: true });
+        }
+
+        logo.onload = function() { if (!gameActive) draw(); };
+        logo.onerror = function() { console.warn('Логотип не загружен, используется fallback'); };
+
+        init();
+
+        window.addEventListener('beforeunload', function() {
+            if (animationId) cancelAnimationFrame(animationId);
+            if (timerInterval) clearInterval(timerInterval);
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('touchmove', onTouchMove);
+            window.removeEventListener('touchstart', onTouchStart);
+        });
+    })();
+</script>
+{% endblock %}

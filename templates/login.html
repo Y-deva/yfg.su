@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="container">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-icon"><i class="fas fa-sign-in-alt"></i></div>
+                <h2>Вход</h2>
+                <form method="post" action="{{ url_for('login') }}">
+                    <div class="auth-field">
+                        <label for="login">Email или никнейм</label>
+                        <input type="text" name="login" id="login" placeholder="Введите email или никнейм" required>
+                    </div>
+                    <div class="auth-field">
+                        <label for="password">Пароль</label>
+                        <input type="password" name="password" id="password" placeholder="Введите пароль" required>
+                    </div>
+                    <button type="submit" class="auth-btn auth-btn-primary">Войти</button>
+                </form>
+                <p class="auth-link">
+                    Нет аккаунта? <a href="{{ url_for('register') }}">Зарегистрироваться</a>
+                </p>
+            </div>
+
+            <div class="auth-info">
+                <div class="auth-features">
+                    <h3>Возможности платформы</h3>
+                    <ul>
+                        <li><i class="fas fa-ticket-alt"></i> Приобретение билетов на мероприятия</li>
+                        <li><i class="fas fa-exchange-alt"></i> Передача билетов другим участникам</li>
+                        <li><i class="fas fa-palette"></i> Доступ к маркетплейсу мастеров</li>
+                        <li><i class="fas fa-link"></i> Блокчейн-гарантия подлинности</li>
+                        <li><i class="fas fa-users"></i> Участие в сообществе организаторов</li>
+                    </ul>
+                </div>
+                <div class="auth-social">
+                    <p>Или войдите через:</p>
+                    <div class="social-buttons">
+                        <button class="btn-social telegram"><i class="fab fa-telegram"></i> Telegram</button>
+                        <button class="btn-social discord"><i class="fab fa-discord"></i> Discord</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .auth-page {
+        padding: 60px 0;
+        min-height: calc(100vh - 200px);
+        display: flex;
+        align-items: center;
+    }
+    .auth-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        max-width: 960px;
+        margin: 0 auto;
+    }
+    .auth-card {
+        background: var(--bg-card);
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: var(--shadow-heavy);
+    }
+    .auth-icon {
+        text-align: center;
+        font-size: 48px;
+        color: var(--color-primary);
+        margin-bottom: 16px;
+    }
+    .auth-card h2 {
+        text-align: center;
+        font-size: 28px;
+        color: var(--text-primary);
+        margin-bottom: 24px;
+    }
+    .auth-field {
+        margin-bottom: 20px;
+    }
+    .auth-field label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 6px;
+    }
+    .auth-field input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        font-size: 16px;
+        background: var(--bg-input);
+        color: var(--text-primary);
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .auth-field input:focus {
+        outline: none;
+        border-color: var(--color-secondary);
+        box-shadow: 0 0 0 3px rgba(168,85,247,0.15);
+    }
+    .auth-btn {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .auth-btn-primary {
+        background: var(--gradient-main);
+        color: white;
+    }
+    .auth-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(249,115,22,0.3);
+    }
+    .auth-link {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+    .auth-link a {
+        color: var(--color-primary);
+        text-decoration: none;
+        font-weight: 600;
+    }
+    .auth-link a:hover {
+        text-decoration: underline;
+    }
+    .auth-info {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 30px;
+    }
+    .auth-features h3 {
+        font-size: 22px;
+        color: var(--text-primary);
+        margin-bottom: 20px;
+    }
+    .auth-features ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .auth-features li {
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border-light);
+        font-size: 15px;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .auth-features li:last-child {
+        border-bottom: none;
+    }
+    .auth-features li i {
+        color: var(--color-primary);
+        font-size: 18px;
+        width: 24px;
+        text-align: center;
+    }
+    .auth-social {
+        text-align: center;
+    }
+    .auth-social p {
+        font-size: 14px;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+    }
+    .social-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+    .btn-social {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: transform 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .btn-social.telegram {
+        background: #0088cc;
+        color: white;
+    }
+    .btn-social.telegram:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,136,204,0.3);
+    }
+    .btn-social.discord {
+        background: #5865f2;
+        color: white;
+    }
+    .btn-social.discord:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(88,101,242,0.3);
+    }
+
+    @media (max-width: 768px) {
+        .auth-container {
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+        .auth-card {
+            padding: 30px;
+        }
+        .auth-info {
+            order: -1;
+        }
+        .social-buttons {
+            flex-direction: column;
+        }
+        .btn-social {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}

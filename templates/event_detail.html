@@ -1,0 +1,446 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="event-detail-page">
+    <div class="container">
+        <div class="event-detail-grid">
+            <div class="event-detail-left">
+                <div class="event-detail-image">
+                    {% if event.image %}
+                        <img src="{{ url_for('static', filename='uploads/' + event.image) }}" alt="{{ event.title }}">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='images/default-event.jpg') }}" alt="{{ event.title }}">
+                    {% endif %}
+                    {% if event.available_tickets == 0 %}
+                        <div class="event-status-overlay sold-out-overlay">Билеты закончились</div>
+                    {% endif %}
+                </div>
+                <div class="event-detail-info">
+                    <div class="event-category-tag">{{ event.category }}</div>
+                    <h1>{{ event.title }}</h1>
+                    <div class="event-detail-meta">
+                        <div class="meta-item">
+                            <i class="far fa-calendar-alt"></i>
+                            <span>{{ event.date.strftime('%d.%m.%Y') }}</span>
+                            <span class="meta-time">{{ event.date.strftime('%H:%M') }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>{{ event.location }}</span>
+                            {% if event.address %}
+                                <span class="meta-address">{{ event.address }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-user"></i>
+                            <span>Организатор: <a href="#">{{ event.organizer.username }}</a></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="event-detail-right">
+                <div class="event-buy-card">
+                    <div class="event-price-block">
+                        <span class="price-label">Стоимость билета</span>
+                        <span class="price-value">{{ event.price|int }} ₽</span>
+                    </div>
+                    <div class="event-availability">
+                        <span class="availability-label">Доступно билетов</span>
+                        <span class="availability-value {% if event.available_tickets < 10 %}low{% endif %}">
+                            {{ event.available_tickets }}
+                        </span>
+                    </div>
+                    {% if can_buy %}
+                        <form method="post" action="{{ url_for('buy_tickets', event_id=event.id) }}" class="buy-form">
+                            <div class="quantity-selector">
+                                <label for="quantity">Количество</label>
+                                <div class="quantity-control">
+                                    <button type="button" class="qty-btn" onclick="changeQuantity(-1)">−</button>
+                                    <input type="number" name="quantity" id="quantity" value="1" min="1" max="{{ event.available_tickets }}">
+                                    <button type="button" class="qty-btn" onclick="changeQuantity(1)">+</button>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-buy-tickets">
+                                <i class="fas fa-ticket-alt"></i> Купить билеты
+                            </button>
+                        </form>
+                    {% elif event.available_tickets == 0 %}
+                        <div class="sold-out-message">
+                            <i class="fas fa-times-circle"></i>
+                            <p>Все билеты проданы</p>
+                        </div>
+                    {% elif not user_id %}
+                        <div class="login-to-buy">
+                            <p><a href="{{ url_for('login') }}">Войдите</a>, чтобы приобрести билеты</p>
+                        </div>
+                    {% endif %}
+                    <div class="event-share">
+                        <span>Поделиться:</span>
+                        <a href="#" onclick="shareEvent()"><i class="fas fa-share-alt"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="event-description-section">
+            <h2>Описание мероприятия</h2>
+            <div class="event-description">
+                {{ event.description or 'Описание отсутствует' }}
+            </div>
+        </div>
+
+        {% if organizer_reviews %}
+            <div class="organizer-reviews">
+                <h2>Отзывы об организаторе</h2>
+                <div class="reviews-grid">
+                    {% for review in organizer_reviews[:5] %}
+                        <div class="review-card">
+                            <div class="review-header">
+                                <span class="review-author">{{ review.reviewer.username }}</span>
+                                <span class="review-rating">
+                                    {% for i in range(review.rating) %}⭐{% endfor %}
+                                </span>
+                            </div>
+                            <p class="review-comment">{{ review.comment }}</p>
+                            <span class="review-date">{{ review.created_at.strftime('%d.%m.%Y') }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function changeQuantity(delta) {
+        const input = document.getElementById('quantity');
+        let val = parseInt(input.value) + delta;
+        const max = parseInt(input.max);
+        if (val < 1) val = 1;
+        if (val > max) val = max;
+        input.value = val;
+    }
+
+    function shareEvent() {
+        if (navigator.share) {
+            navigator.share({
+                title: '{{ event.title }}',
+                text: 'Приглашаю вас на мероприятие!',
+                url: window.location.href
+            });
+        } else {
+            navigator.clipboard.writeText(window.location.href);
+            showToast('Ссылка скопирована', 'success');
+        }
+    }
+
+    function showToast(message, type) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type} show`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+</script>
+
+<style>
+    .event-detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 30px;
+        margin: 30px 0;
+    }
+    .event-detail-image {
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    .event-detail-image img {
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+    }
+    .event-status-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 20px 40px;
+        border-radius: 12px;
+        font-size: 24px;
+        font-weight: 700;
+    }
+    .event-category-tag {
+        display: inline-block;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        background: var(--tag-bg);
+        color: var(--tag-color);
+        margin-bottom: 12px;
+    }
+    .event-detail-info h1 {
+        font-size: 28px;
+        color: var(--text-primary);
+        margin-bottom: 15px;
+    }
+    .event-detail-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+    .meta-item i {
+        width: 20px;
+        color: var(--color-primary);
+    }
+    .meta-time, .meta-address {
+        color: var(--text-muted);
+        font-size: 13px;
+    }
+    .event-buy-card {
+        background: var(--bg-card);
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: var(--shadow);
+        position: sticky;
+        top: 100px;
+    }
+    .event-price-block {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border-light);
+    }
+    .price-label {
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+    .price-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    .event-availability {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid var(--border-light);
+    }
+    .availability-label {
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+    .availability-value {
+        font-size: 18px;
+        font-weight: 600;
+    }
+    .availability-value.low {
+        color: var(--toast-error);
+    }
+    .buy-form {
+        margin-top: 20px;
+    }
+    .quantity-selector {
+        margin-bottom: 15px;
+    }
+    .quantity-selector label {
+        display: block;
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+    }
+    .quantity-control {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .qty-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 1px solid var(--border-color);
+        background: var(--bg-hover);
+        color: var(--text-primary);
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+    .qty-btn:hover {
+        background: var(--border-color);
+    }
+    .quantity-control input {
+        width: 60px;
+        height: 36px;
+        text-align: center;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 16px;
+        background: var(--bg-input);
+        color: var(--text-primary);
+    }
+    .btn-buy-tickets {
+        width: 100%;
+        padding: 14px;
+        background: var(--gradient-main);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .btn-buy-tickets:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(249,115,22,0.3);
+    }
+    .sold-out-message {
+        text-align: center;
+        padding: 20px;
+        color: var(--toast-error);
+    }
+    .sold-out-message i {
+        font-size: 36px;
+        margin-bottom: 10px;
+    }
+    .login-to-buy {
+        text-align: center;
+        padding: 20px;
+        background: var(--bg-hover);
+        border-radius: 12px;
+    }
+    .login-to-buy a {
+        color: var(--color-primary);
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .login-to-buy a:hover {
+        text-decoration: underline;
+    }
+    .event-share {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid var(--border-light);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+    .event-share a {
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    .event-share a:hover {
+        color: var(--color-primary);
+    }
+    .event-description-section {
+        margin: 40px 0;
+        padding: 30px;
+        background: var(--bg-card);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+    }
+    .event-description-section h2 {
+        font-size: 22px;
+        margin-bottom: 15px;
+        color: var(--text-primary);
+    }
+    .event-description {
+        font-size: 16px;
+        line-height: 1.6;
+        color: var(--text-secondary);
+    }
+    .organizer-reviews {
+        margin: 40px 0;
+    }
+    .organizer-reviews h2 {
+        font-size: 22px;
+        margin-bottom: 20px;
+        color: var(--text-primary);
+    }
+    .reviews-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+    .review-card {
+        background: var(--bg-card);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        border-left: 4px solid var(--color-secondary);
+    }
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    .review-author {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    .review-rating {
+        color: #f59e0b;
+    }
+    .review-comment {
+        color: var(--text-secondary);
+        font-size: 14px;
+        line-height: 1.5;
+        margin-bottom: 8px;
+    }
+    .review-date {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    @media (max-width: 768px) {
+        .event-detail-grid {
+            grid-template-columns: 1fr;
+        }
+        .event-buy-card {
+            position: static;
+        }
+        .event-detail-image img {
+            height: 250px;
+        }
+        .reviews-grid {
+            grid-template-columns: 1fr;
+        }
+        .event-detail-info h1 {
+            font-size: 24px;
+        }
+        .event-status-overlay {
+            font-size: 18px;
+            padding: 16px 24px;
+        }
+    }
+</style>
+{% endblock %}

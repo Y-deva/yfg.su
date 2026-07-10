@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="rules-page">
+    <div class="container">
+        <div class="rules-hero">
+            <h1><i class="fas fa-gavel"></i> Правила сообщества</h1>
+            <p class="rules-subtitle">Уважение, профессионализм и безопасность — основа нашей платформы</p>
+        </div>
+
+        <div class="rules-content">
+            <div class="rules-section">
+                <h2>1. Общие принципы</h2>
+                <ul>
+                    <li>Проявляйте уважение ко всем участникам сообщества</li>
+                    <li>Оказывайте помощь тем, кто обращается за советом или поддержкой</li>
+                    <li>Делитесь профессиональным опытом и знаниями с другими пользователями</li>
+                    <li>Высказывайте критику конструктивно, без перехода на личности</li>
+                    <li>Соблюдайте законодательство Российской Федерации</li>
+                </ul>
+            </div>
+
+            <div class="rules-section">
+                <h2>2. Запрещённые действия</h2>
+                <ul>
+                    <li>Оскорбления, грубость, агрессивное поведение в любых проявлениях</li>
+                    <li>Спам, нецелевая реклама, размещение ссылок на сторонние ресурсы без согласования</li>
+                    <li>Публикация личной информации третьих лиц без их согласия</li>
+                    <li>Распространение вредоносного ПО, фишинговых ссылок и мошеннических материалов</li>
+                    <li>Нарушение авторских прав — копирование чужих материалов без указания источника</li>
+                    <li>Дублирование вопросов и ответов с целью искусственного продвижения</li>
+                </ul>
+            </div>
+
+            <div class="rules-section">
+                <h2>3. Организация мероприятий</h2>
+                <ul>
+                    <li>Организатор несёт полную ответственность за проводимое мероприятие</li>
+                    <li>Информация о мероприятии должна соответствовать действительности</li>
+                    <li>Цена билетов устанавливается организатором и должна быть указана прозрачно</li>
+                    <li>Возврат билетов осуществляется по правилам, установленным организатором</li>
+                    <li>Запрещена перепродажа билетов по завышенной стоимости</li>
+                    <li>Организатор обязан своевременно уведомлять участников об изменениях</li>
+                </ul>
+            </div>
+
+            <div class="rules-section">
+                <h2>4. Работа мастеров</h2>
+                <ul>
+                    <li>Мастер обязан добросовестно выполнять принятые заказы</li>
+                    <li>Цены и сроки выполнения согласовываются до начала работы</li>
+                    <li>Заказчик обязан оплатить работу в согласованные сроки</li>
+                    <li>Отзывы должны быть объективными и конструктивными</li>
+                    <li>Запрещено использовать чужие работы в портфолио без разрешения автора</li>
+                </ul>
+            </div>
+
+            <div class="rules-section">
+                <h2>5. Блокчейн и референсы</h2>
+                <ul>
+                    <li>Загружаемые референсы должны принадлежать автору или использоваться с разрешения правообладателя</li>
+                    <li>Запрещена загрузка контента, нарушающего авторские права</li>
+                    <li>Хеш-суммы используются для подтверждения авторства и даты создания</li>
+                    <li>Записи в блокчейне не могут быть удалены или изменены после подтверждения</li>
+                </ul>
+            </div>
+
+            <div class="rules-section">
+                <h2>6. Ответственность за нарушения</h2>
+                <ul>
+                    <li><strong>Предупреждение</strong> — за первое незначительное нарушение</li>
+                    <li><strong>Временная блокировка (от 3 до 30 дней)</strong> — за повторные или систематические нарушения</li>
+                    <li><strong>Перманентная блокировка</strong> — за грубые нарушения (оскорбления, угрозы, мошенничество, распространение вредоносного кода)</li>
+                    <li>Администрация оставляет за собой право применять меры без предварительного уведомления</li>
+                </ul>
+            </div>
+
+            <div class="rules-section">
+                <h2>7. Ограничение ответственности</h2>
+                <ul>
+                    <li>Администрация не несёт ответственности за действия организаторов и мастеров</li>
+                    <li>Спорные ситуации разрешаются в соответствии с законодательством РФ</li>
+                    <li>Пользователь несёт ответственность за достоверность предоставленных данных</li>
+                    <li>Платформа является информационным посредником между организаторами и участниками</li>
+                </ul>
+            </div>
+
+            <div class="rules-footer">
+                <p><i class="fas fa-info-circle"></i> Правила могут быть изменены. Об изменениях мы будем уведомлять на сайте.</p>
+                <p class="rules-date">Последнее обновление: 10 июля 2026 года</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .rules-page {
+        padding: 30px 0;
+    }
+    .rules-hero {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    .rules-hero h1 {
+        font-size: 36px;
+        color: var(--text-primary);
+    }
+    .rules-hero h1 i {
+        color: var(--color-primary);
+        margin-right: 12px;
+    }
+    .rules-subtitle {
+        font-size: 18px;
+        color: var(--text-secondary);
+    }
+    .rules-content {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    .rules-section {
+        background: var(--bg-card);
+        padding: 24px 30px;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+    }
+    .rules-section h2 {
+        font-size: 20px;
+        color: var(--text-primary);
+        margin-bottom: 14px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--color-secondary);
+    }
+    .rules-section ul {
+        margin: 0;
+        padding-left: 20px;
+        color: var(--text-secondary);
+        line-height: 1.8;
+    }
+    .rules-section li {
+        margin-bottom: 4px;
+    }
+    .rules-section strong {
+        color: var(--text-primary);
+    }
+    .rules-footer {
+        background: var(--bg-card);
+        padding: 20px 30px;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 14px;
+    }
+    .rules-footer i {
+        color: var(--color-primary);
+        margin-right: 8px;
+    }
+    .rules-date {
+        margin-top: 6px;
+        font-size: 13px;
+    }
+
+    @media (max-width: 768px) {
+        .rules-hero h1 {
+            font-size: 28px;
+        }
+        .rules-section {
+            padding: 18px 16px;
+        }
+        .rules-section h2 {
+            font-size: 18px;
+        }
+        .rules-section ul {
+            padding-left: 16px;
+            font-size: 14px;
+        }
+        .rules-footer {
+            padding: 16px;
+            font-size: 13px;
+        }
+    }
+</style>
+{% endblock %}
